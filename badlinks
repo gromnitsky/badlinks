@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail
+__dir__=$(dirname "$(readlink -f "$0")")
+
+usage="Usage: $0 [-l max level] [-j max jobs] [-e] [-i domains.txt] url"
+link_type='Leaf|Invalid'
+while getopts i:l:j:e opt; do
+    case $opt in
+        i) opt_i=$OPTARG ;;
+        l) opt_l=$OPTARG ;;
+        j) opt_j=$OPTARG ;;
+        e) link_type="$link_type|External" ;;
+        *) echo "$usage" 1>&2; exit 1
+    esac
+done
+shift $((OPTIND-1))
+
+: "${1:?$usage}"
+export LEVEL=${opt_l:-20} JOBS=${opt_j:-`nproc`} IGNORE=${opt_i}
+
+"$__dir__/urlextract-recursive" "$1" | \
+    awk '$2 ~ /'"$link_type"'/ {print $3, $4}' | \
+    xargs -r -n2 -P "$JOBS" "$__dir__/urlcheck"

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail
+__dir__=$(dirname "$(readlink -f "$0")")
+. "$__dir__/lib.bash"
+
+check_link() {
+    local ec=0
+    fetch "$1" | head -c1 > /dev/null || {
+        ec=$?
+        [ $ec == 23 ] && return 0 # pipe was closed by 'head'
+        [ $ec -lt 100 ] && echo "Bad $1 in $2"
+        return 101
+    }
+}
+
+type curl > /dev/null
+url=${1:?Usage: IGNORE=domains.txt $0 url parent}
+parent=${2:-.}
+
+url_parse "$url" || { echo "Invalid $url in $parent"; exit 100; }
+
+if [ "$IGNORE" ] && search "${URL[host]}" "$IGNORE" ; then
+    echo "Ignoring $url in $parent"
+else
+    [ 2 == $? ] && exit 100
+    check_link "$url" "$parent"
+fi

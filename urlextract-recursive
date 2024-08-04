@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail
+__dir__=$(dirname "$(readlink -f "$0")")
+. "$__dir__/lib.bash"
+
+jn() { jobs -l | wc -l; }
+
+scan() {
+    local url="$1" level="$2" parent="$3"
+
+    [ "$level" -ge "$LEVEL" ] && return 0
+    echo "$level Scanning $url $parent"
+
+    level=$((level+1))
+    for u in `fetch "$url" | "$__dir__/urlextract.rb" "$url" | sort -u`; do
+        search "$u" "$history" && continue
+        echo "$u" >> "$history"
+
+        url_parse "$u" || { echo "$level Invalid $u $url"; continue; }
+        if [ "$origin" == "${URL[host]}" ] ; then
+            if is_html "$u"; then
+                local async=
+                [ 1 == $level ] && [ "$JOBS" -gt 1 ] \
+                    && [ `jn` -lt "$JOBS" ] && async=1
+                if [ $async ] ; then
+                    scan "$u" $level "$url" &
+                else
+                    scan "$u" $level "$url"
+                fi
+            else
+                echo "$level Leaf $u $url"
+            fi
+        else
+            echo "$level External $u" "$url"
+        fi
+    done
+}
+
+type curl > /dev/null
+: "${LEVEL:=20}"
+: "${JOBS:=`nproc`}"
+url=${1:?Usage [LEVEL=$LEVEL] $0 url}
+
+url_parse "$url"
+origin=${URL[host]}
+history=${HISTORY:-`mktemp /tmp/urlextract-recursive.XXXXXX`}
+trap 'rm -f $history; wait; exit 130' 1 2 15
+trap 'rm -f $history' 0
+
+if is_html "$url"; then
+    scan "$url" 0 .
+    wait
+else
+    echo "0 Leaf $url ."
+fi
