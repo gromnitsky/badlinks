@@ -1,4 +1,4 @@
-An attempt to write a fast link checker app under 150 LOC.
+An attempt to write a fast link checker under 150 LOC.
 
 ~~~
 $ wc -l lib.bash url* badlinks
@@ -30,8 +30,11 @@ A timeout for each connection is 3 seconds, see `lib.bash`.
 
 To obtain a full list of URLs without checks:
 
-    $ LEVEL=5 ./urlextract-recursive http://example.com
+    $ LEVEL=3 ./urlextract-recursive http://example.com/foo/bar
 
-## Loicense
+Then process it with awk+urlcheck (this is what *badlinks* wrapper
+does).
+
+## &#x2672; Loicense
 
 MIT
