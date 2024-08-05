@@ -14,7 +14,7 @@ url_parse() {
     )
 }
 
-fetch() { curl -sfL --connect-timeout 3 -m 3 -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36' -H 'accept-language: en-US,en;q=0.9' -H 'upgrade-insecure-requests: 1' "$@"; }
+fetch() { curl -sfL --connect-timeout "${CURL_TIMEOUT:-3}" -m "${CURL_TIMEOUT:-3}" -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36' -H 'accept-language: en-US,en;q=0.9' -H 'upgrade-insecure-requests: 1' "$@"; }
 
 is_html() { fetch -I "$1" | grep -Ei '^content-type:\s+text/html' > /dev/null; }
 

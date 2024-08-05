@@ -6,15 +6,15 @@ $ wc -l lib.bash url* badlinks
   28 urlcheck
   19 urlextract.rb
   56 urlextract-recursive
-  24 badlinks
- 148 total
+  25 badlinks
+ 149 total
 ~~~
 
 Actuall LOC:
 
 ~~~
 $ scc | grep ^[BR] | awk '{s+=$6} END {print s}'
-118
+119
 ~~~
 
 ## Usage
@@ -26,7 +26,7 @@ Run `bundle` to install the required gems. Then
 `-e` means to check external links (whose origin != `example.com`),
 `-l` sets max recursion level.
 
-A timeout for each connection is 3 seconds, see `lib.bash`.
+A timeout for each connection is 3 seconds, use `-t sec` to change.
 
 To obtain a full list of URLs without checks:
 
